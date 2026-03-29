@@ -56,7 +56,7 @@ notebooklm ask "question"                     # query notebook content
 ### Artifact generation
 ```bash
 notebooklm generate <type>                    # types: infographic, audio, video, slide-deck, mind-map, report
-notebooklm artifact wait <artifact-id> --timeout 600   # wait for generation (can take up to 10 min)
+notebooklm artifact wait <artifact-id> --timeout 600   # wait for generation (audio/infographic ~10 min, video up to 20 min)
 notebooklm download <type> "/path/to/output"  # download to local path
 ```
 
@@ -292,10 +292,15 @@ notebooklm download audio "research/deliverables/YYYY-MM-DD-<slug>-podcast.mp3"
 Mark "Audio podcast generated" `[x]` in INPROGRESS.md.
 
 ### Video
+Video generation takes significantly longer (up to 20 minutes). Poll every 5 minutes:
 ```bash
 notebooklm generate video
 # capture the artifact ID from output
-notebooklm artifact wait <artifact-id> --timeout 600
+# poll every 5 minutes, up to 4 attempts (20 min total)
+notebooklm artifact wait <artifact-id> --timeout 300   # attempt 1 (5 min)
+notebooklm artifact wait <artifact-id> --timeout 300   # attempt 2 (10 min)
+notebooklm artifact wait <artifact-id> --timeout 300   # attempt 3 (15 min)
+notebooklm artifact wait <artifact-id> --timeout 300   # attempt 4 (20 min)
 notebooklm download video "research/deliverables/YYYY-MM-DD-<slug>-video.mp4"
 ```
 
