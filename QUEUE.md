@@ -4,16 +4,15 @@ This document contains methods/tools in the Queue section, for further investiga
 
 ## Queue
 
-### OpenSpace
-
-Improve and monitor skills.
-https://github.com/HKUDS/OpenSpace
-
-
 ### CLI Anything
 
 Generates a CLI easily for pretty much any open source software.
 https://github.com/HKUDS/CLI-Anything
+
+### Garry Tan Gstack
+
+Some leadership, startup incubator skill library.
+https://github.com/garrytan/gstack#
 
 ### Claude Peers
 
@@ -22,4 +21,5 @@ https://github.com/louislva/claude-peers-mcp
 
 ## Done
 
-- [2026-03-29] **AutoResearch** — research/2026-03-29-autoresearch.md
+- [2026-03-29] **AutoResearch** — [research doc](research/2026-03-29-autoresearch.md)
+- [2026-03-29] **OpenSpace** — [research doc](research/2026-03-29-openspace.md)
