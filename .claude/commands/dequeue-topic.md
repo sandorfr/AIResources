@@ -4,7 +4,8 @@ description: >
   Process the next topic from the QUEUE.md ingestion stream. Dequeues the first
   topic, researches it using web search and YouTube, creates a NotebookLM notebook
   with all sources, runs structured analysis, generates a concise research document
-  with enrichments (infographic, audio podcast), and updates the queue. Supports
+  with enrichments (infographic, audio podcast, video) and publishes to YouTube.
+  Supports
   interrupt/resume via INPROGRESS.md state tracking.
   Trigger on: "dequeue", "next topic", "process queue", "dequeue-topic", or
   "ingestion stream".
@@ -62,6 +63,39 @@ notebooklm download <type> "/path/to/output"  # download to local path
 
 **Important:** `artifact wait` requires an `<artifact-id>` argument (returned by `generate`).
 
+### YouTube Upload (optional — requires one-time setup)
+
+```bash
+youtube-upload \
+  --client-secrets=~/.config/youtube-upload/client_secrets.json \
+  --title="Title" \
+  --description="Description" \
+  --category="Science & Technology" \
+  --tags="tag1,tag2" \
+  --privacy="unlisted" \
+  video.mp4
+# Returns the YouTube video ID on success
+```
+
+### ffmpeg — convert audio podcast to video
+
+```bash
+ffmpeg -loop 1 -i infographic.png -i podcast.mp3 \
+  -c:v libx264 -tune stillimage -c:a aac -b:a 192k \
+  -pix_fmt yuv420p -shortest output.mp4
+```
+
+### YouTube upload one-time setup
+
+If `youtube-upload` is not available or credentials are missing, **skip the upload step gracefully**.
+
+To enable YouTube publishing:
+1. Go to Google Cloud Console → create project → enable YouTube Data API v3
+2. Create OAuth 2.0 credentials (Desktop app) → download `client_secrets.json`
+3. `pip3 install google-api-python-client youtube-upload`
+4. `mkdir -p ~/.config/youtube-upload && mv client_secrets.json ~/.config/youtube-upload/`
+5. Run one manual upload to complete browser OAuth flow (credentials are cached after that)
+
 ---
 
 ## Step 0 — Check for in-progress work
@@ -96,6 +130,8 @@ notebook_id: <notebook-id or empty>
 - [ ] Infographic generated
 - [ ] Audio podcast generated
 - [ ] Video generated
+- [ ] Audio converted to video (ffmpeg)
+- [ ] Published to YouTube (or skipped)
 - [ ] QUEUE.md updated (moved to Done)
 ```
 
@@ -310,7 +346,75 @@ If any generation fails, log the error and continue. Report partial results.
 
 ---
 
-## Step 7 — Update QUEUE.md (move to Done)
+## Step 7 — Convert audio to video & publish to YouTube
+
+### Pre-check
+
+```bash
+which youtube-upload && test -f ~/.config/youtube-upload/client_secrets.json
+```
+
+If either check fails, skip this entire step and report: "YouTube upload skipped — run the one-time setup (see skill docs) to enable." Mark steps `[x]` and continue.
+
+### Convert podcast to video
+
+Combine the infographic (as a static background) with the podcast audio:
+
+```bash
+ffmpeg -loop 1 -i research/deliverables/YYYY-MM-DD-<slug>-infographic.png \
+  -i research/deliverables/YYYY-MM-DD-<slug>-podcast.mp3 \
+  -c:v libx264 -tune stillimage -c:a aac -b:a 192k \
+  -pix_fmt yuv420p -shortest \
+  research/deliverables/YYYY-MM-DD-<slug>-podcast-video.mp4
+```
+
+Mark "Audio converted to video" `[x]` in INPROGRESS.md.
+
+### Upload to YouTube
+
+Upload both videos sequentially:
+
+**1. Video overview** (from NotebookLM):
+```bash
+youtube-upload \
+  --client-secrets=~/.config/youtube-upload/client_secrets.json \
+  --title="<Topic Name> — Overview" \
+  --description="<First 2-3 sentences from 'What is it?' section>" \
+  --category="Science & Technology" \
+  --tags="<comma-separated tags from research doc frontmatter>" \
+  --privacy="unlisted" \
+  "research/deliverables/YYYY-MM-DD-<slug>-video.mp4"
+```
+
+**2. Audio deep dive** (from ffmpeg conversion):
+```bash
+youtube-upload \
+  --client-secrets=~/.config/youtube-upload/client_secrets.json \
+  --title="<Topic Name> — Audio Deep Dive" \
+  --description="<First 2-3 sentences from 'What is it?' section>" \
+  --category="Science & Technology" \
+  --tags="<comma-separated tags from research doc frontmatter>" \
+  --privacy="unlisted" \
+  "research/deliverables/YYYY-MM-DD-<slug>-podcast-video.mp4"
+```
+
+Capture the YouTube video IDs from the output. Construct URLs as `https://www.youtube.com/watch?v=<video-id>`.
+
+### Update research doc with YouTube links
+
+Replace the media links line in the research document with:
+
+```markdown
+![<Topic Name> Infographic](deliverables/YYYY-MM-DD-<slug>-infographic.png)
+
+[Audio overview](deliverables/YYYY-MM-DD-<slug>-podcast.mp3) | [Video overview (YouTube)](https://www.youtube.com/watch?v=<video-id>) | [Audio deep dive (YouTube)](https://www.youtube.com/watch?v=<audio-video-id>)
+```
+
+Mark "Published to YouTube" `[x]` in INPROGRESS.md.
+
+---
+
+## Step 8 — Update QUEUE.md (move to Done)
 
 Re-read `QUEUE.md` (it may have changed).
 
@@ -327,7 +431,7 @@ Mark step `[x]` in INPROGRESS.md.
 
 ---
 
-## Step 8 — Clean up & report
+## Step 9 — Clean up & report
 
 **Delete INPROGRESS.md** (all steps complete, state no longer needed).
 
@@ -344,6 +448,11 @@ Present to the user:
 - Infographic: research/deliverables/YYYY-MM-DD-<slug>-infographic.png
 - Podcast: research/deliverables/YYYY-MM-DD-<slug>-podcast.mp3
 - Video: research/deliverables/YYYY-MM-DD-<slug>-video.mp4
+- Podcast video: research/deliverables/YYYY-MM-DD-<slug>-podcast-video.mp4
+
+### YouTube (if published)
+- Video overview: https://www.youtube.com/watch?v=<video-id>
+- Audio deep dive: https://www.youtube.com/watch?v=<audio-video-id>
 
 ### NotebookLM
 - Notebook ID: <id>
