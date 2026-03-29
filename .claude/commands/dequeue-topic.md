@@ -414,7 +414,9 @@ Mark "Published to YouTube" `[x]` in INPROGRESS.md.
 
 ---
 
-## Step 8 — Update QUEUE.md (move to Done)
+## Step 8 — Update QUEUE.md and README.md
+
+### Update QUEUE.md
 
 Re-read `QUEUE.md` (it may have changed).
 
@@ -426,6 +428,16 @@ Re-read `QUEUE.md` (it may have changed).
 
    - [YYYY-MM-DD] **<Topic Name>** — [research doc](research/YYYY-MM-DD-<slug>.md)
    ```
+
+### Update README.md
+
+Add a new row to the `## Researched Topics` table in `README.md`:
+
+```markdown
+| **<Topic Name>** | <One-sentence summary — max 15 words, no jargon> | [Read](research/YYYY-MM-DD-<slug>.md) |
+```
+
+The summary should be a very brief, plain-English description of what the tool/concept does. Keep it scannable.
 
 Mark step `[x]` in INPROGRESS.md.
 
