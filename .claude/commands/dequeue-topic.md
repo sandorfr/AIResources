@@ -53,8 +53,8 @@ notebooklm ask "question"                     # query notebook content
 
 ### Artifact generation
 ```bash
-notebooklm generate <type>                    # types: infographic, audio, slide-deck, mind-map, report
-notebooklm artifact wait <artifact-id> --timeout 300   # wait for generation (can take 1-5 min)
+notebooklm generate <type>                    # types: infographic, audio, video, slide-deck, mind-map, report
+notebooklm artifact wait <artifact-id> --timeout 600   # wait for generation (can take up to 10 min)
 notebooklm download <type> "/path/to/output"  # download to local path
 ```
 
@@ -93,6 +93,7 @@ notebook_id: <notebook-id or empty>
 - [ ] Research document written
 - [ ] Infographic generated
 - [ ] Audio podcast generated
+- [ ] Video generated
 - [ ] QUEUE.md updated (moved to Done)
 ```
 
@@ -216,7 +217,7 @@ tags: [<2-5 relevant tags>]
 
 ![<Topic Name> Infographic](deliverables/YYYY-MM-DD-<slug>-infographic.png)
 
-[Listen to the audio overview](deliverables/YYYY-MM-DD-<slug>-podcast.mp3)
+[Listen to the audio overview](deliverables/YYYY-MM-DD-<slug>-podcast.mp3) | [Watch the video overview](deliverables/YYYY-MM-DD-<slug>-video.mp4)
 
 ---
 
@@ -269,7 +270,7 @@ Mark step `[x]` in INPROGRESS.md.
 ```bash
 notebooklm generate infographic
 # capture the artifact ID from output
-notebooklm artifact wait <artifact-id> --timeout 300
+notebooklm artifact wait <artifact-id> --timeout 600
 notebooklm download infographic "research/deliverables/YYYY-MM-DD-<slug>-infographic.png"
 ```
 
@@ -279,13 +280,23 @@ Mark "Infographic generated" `[x]` in INPROGRESS.md.
 ```bash
 notebooklm generate audio
 # capture the artifact ID from output
-notebooklm artifact wait <artifact-id> --timeout 300
+notebooklm artifact wait <artifact-id> --timeout 600
 notebooklm download audio "research/deliverables/YYYY-MM-DD-<slug>-podcast.mp3"
 ```
 
 Mark "Audio podcast generated" `[x]` in INPROGRESS.md.
 
-If either generation fails, log the error and continue. Report partial results.
+### Video
+```bash
+notebooklm generate video
+# capture the artifact ID from output
+notebooklm artifact wait <artifact-id> --timeout 600
+notebooklm download video "research/deliverables/YYYY-MM-DD-<slug>-video.mp4"
+```
+
+Mark "Video generated" `[x]` in INPROGRESS.md.
+
+If any generation fails, log the error and continue. Report partial results.
 
 ---
 
@@ -322,6 +333,7 @@ Present to the user:
 - Research doc: research/YYYY-MM-DD-<slug>.md
 - Infographic: research/deliverables/YYYY-MM-DD-<slug>-infographic.png
 - Podcast: research/deliverables/YYYY-MM-DD-<slug>-podcast.mp3
+- Video: research/deliverables/YYYY-MM-DD-<slug>-video.mp4
 
 ### NotebookLM
 - Notebook ID: <id>
