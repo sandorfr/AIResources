@@ -16,8 +16,49 @@ Process the next topic from the learning queue, research it, and produce a conci
 
 **Queue file:** `QUEUE.md` (project root)
 **State file:** `INPROGRESS.md` (project root)
-**Research vault:** `/Users/cyprienautexier/vaults/research/research/`
-**Deliverables:** `/Users/cyprienautexier/vaults/research/deliverables/`
+**Research output:** `research/` (project root)
+**Deliverables:** `research/deliverables/` (project root)
+
+---
+
+## NotebookLM CLI Reference
+
+The `notebooklm` CLI is at `~/.local/bin/notebooklm`. All commands below use the correct, tested syntax.
+
+### Notebook management
+```bash
+notebooklm create "title"                    # returns notebook ID
+notebooklm use <id>                           # set active (supports prefix match)
+notebooklm status                             # show active notebook info
+notebooklm list                               # list all notebooks
+```
+
+### Sources — type is AUTO-DETECTED
+```bash
+notebooklm source add <url>                   # web URL or YouTube — auto-detected
+notebooklm source add ./file.md               # local file
+notebooklm source add "text content"          # inline text
+notebooklm source wait <source-id> --timeout 120   # wait for ONE source by ID
+notebooklm source list                        # list sources in active notebook
+```
+
+**Important:** `source add` takes content as a positional argument. Do NOT use `--url` or `--youtube` flags — they don't exist. Type is auto-detected from the content.
+
+**Important:** `source wait` requires a `<source-id>` argument. It does not wait for all sources at once.
+
+### Analysis
+```bash
+notebooklm ask "question"                     # query notebook content
+```
+
+### Artifact generation
+```bash
+notebooklm generate <type>                    # types: infographic, audio, slide-deck, mind-map, report
+notebooklm artifact wait <artifact-id> --timeout 300   # wait for generation (can take 1-5 min)
+notebooklm download <type> "/path/to/output"  # download to local path
+```
+
+**Important:** `artifact wait` requires an `<artifact-id>` argument (returned by `generate`).
 
 ---
 
@@ -106,8 +147,8 @@ Mark step `[x]` in INPROGRESS.md.
 ## Step 3 — Create NotebookLM notebook & add sources
 
 ```bash
-# Ensure deliverables directory exists
-mkdir -p /Users/cyprienautexier/vaults/research/deliverables
+# Ensure output directories exist
+mkdir -p research/deliverables
 
 # Create notebook
 notebooklm create "[YYYY-MM-DD] <Topic Name>"
@@ -115,21 +156,18 @@ notebooklm create "[YYYY-MM-DD] <Topic Name>"
 # Use the newly created notebook (capture ID from create output)
 notebooklm use <notebook-id>
 
-# Add each web URL
-notebooklm source add --url <url>    # for each web URL
+# Add each source (URLs are auto-detected as web or YouTube)
+notebooklm source add "<url>"    # repeat for each URL
 
-# Add each YouTube URL
-notebooklm source add --youtube <url>  # for each YouTube URL
-
-# Wait for all sources to be indexed
-notebooklm source wait
+# Wait for each source to be indexed (one at a time, by source ID)
+notebooklm source wait <source-id> --timeout 120    # repeat for each source ID
 
 # Verify
 notebooklm source list
 ```
 
-- If any individual `source add` fails, log it and continue.
-- After `source wait`, confirm at least 2 sources were indexed. If fewer, abort with error.
+- If any individual `source add` fails (paywalled, inaccessible), log it and continue.
+- After waiting, confirm at least 2 sources were indexed. If fewer, abort with error.
 - **Update INPROGRESS.md**: set `notebook_id` in frontmatter, mark step `[x]`.
 
 ---
@@ -156,25 +194,29 @@ Mark step `[x]` in INPROGRESS.md.
 
 ## Step 5 — Write research document
 
-Get the notebook URL:
+Get the notebook info:
 ```bash
 notebooklm status
 ```
 
-Write the file to `/Users/cyprienautexier/vaults/research/research/YYYY-MM-DD-<slug>.md`:
+Write the file to `research/YYYY-MM-DD-<slug>.md` (relative to project root):
 
 ```markdown
 ---
 date: YYYY-MM-DD
 topic: <Topic Name>
 sources: <count of indexed sources>
-notebook_url: <URL from notebooklm status>
+notebook_id: <notebook ID from notebooklm status>
 tags: [<2-5 relevant tags>]
 ---
 
 # <Topic Name>
 
 <Description from QUEUE.md>
+
+![<Topic Name> Infographic](deliverables/YYYY-MM-DD-<slug>-infographic.png)
+
+[Listen to the audio overview](deliverables/YYYY-MM-DD-<slug>-podcast.mp3)
 
 ---
 
@@ -226,8 +268,9 @@ Mark step `[x]` in INPROGRESS.md.
 ### Infographic
 ```bash
 notebooklm generate infographic
-notebooklm artifact wait
-notebooklm download infographic "/Users/cyprienautexier/vaults/research/deliverables/YYYY-MM-DD-<slug>-infographic.png"
+# capture the artifact ID from output
+notebooklm artifact wait <artifact-id> --timeout 300
+notebooklm download infographic "research/deliverables/YYYY-MM-DD-<slug>-infographic.png"
 ```
 
 Mark "Infographic generated" `[x]` in INPROGRESS.md.
@@ -235,8 +278,9 @@ Mark "Infographic generated" `[x]` in INPROGRESS.md.
 ### Audio podcast
 ```bash
 notebooklm generate audio
-notebooklm artifact wait
-notebooklm download audio "/Users/cyprienautexier/vaults/research/deliverables/YYYY-MM-DD-<slug>-podcast.mp3"
+# capture the artifact ID from output
+notebooklm artifact wait <artifact-id> --timeout 300
+notebooklm download audio "research/deliverables/YYYY-MM-DD-<slug>-podcast.mp3"
 ```
 
 Mark "Audio podcast generated" `[x]` in INPROGRESS.md.
@@ -255,7 +299,7 @@ Re-read `QUEUE.md` (it may have changed).
    ```markdown
    ## Done
 
-   - [YYYY-MM-DD] **<Topic Name>** — research/YYYY-MM-DD-<slug>.md
+   - [YYYY-MM-DD] **<Topic Name>** — [research doc](research/YYYY-MM-DD-<slug>.md)
    ```
 
 Mark step `[x]` in INPROGRESS.md.
@@ -275,12 +319,12 @@ Present to the user:
 - <3-5 bullet points with the most important takeaways>
 
 ### Generated files
-- Research doc: /Users/cyprienautexier/vaults/research/research/YYYY-MM-DD-<slug>.md
-- Infographic: /Users/cyprienautexier/vaults/research/deliverables/YYYY-MM-DD-<slug>-infographic.png
-- Podcast: /Users/cyprienautexier/vaults/research/deliverables/YYYY-MM-DD-<slug>-podcast.mp3
+- Research doc: research/YYYY-MM-DD-<slug>.md
+- Infographic: research/deliverables/YYYY-MM-DD-<slug>-infographic.png
+- Podcast: research/deliverables/YYYY-MM-DD-<slug>-podcast.mp3
 
 ### NotebookLM
-- Notebook: <notebook URL>
+- Notebook ID: <id>
 - Sources indexed: <N>
 
 ### Queue status
@@ -293,7 +337,7 @@ Present to the user:
 ## Error handling
 
 - **Empty queue**: Report "Queue is empty — nothing to process." and stop.
-- **Source add failures**: Skip failed sources, continue. Minimum 2 sources required; if fewer succeed, abort and report.
+- **Source add failures**: Skip failed sources (paywalled, inaccessible), continue. Minimum 2 sources required; if fewer succeed, abort and report.
 - **NotebookLM create/use failure**: Abort and report. Suggest checking `notebooklm list` and authentication.
 - **Deliverable generation failure**: Continue with remaining deliverables. Report what succeeded and what failed.
 - **QUEUE.md conflict**: Re-read before modifying. If the topic is already gone, report "Topic already processed" and stop.
