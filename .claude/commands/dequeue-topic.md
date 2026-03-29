@@ -44,6 +44,8 @@ notebooklm source list                        # list sources in active notebook
 
 **Important:** `source add` takes content as a positional argument. Do NOT use `--url` or `--youtube` flags — they don't exist. Type is auto-detected from the content.
 
+**Important:** Always add sources **sequentially** (one at a time). Never run multiple `source add` commands in parallel — if one fails, it causes cascading cancellation of all parallel calls.
+
 **Important:** `source wait` requires a `<source-id>` argument. It does not wait for all sources at once.
 
 ### Analysis
@@ -157,10 +159,13 @@ notebooklm create "[YYYY-MM-DD] <Topic Name>"
 # Use the newly created notebook (capture ID from create output)
 notebooklm use <notebook-id>
 
-# Add each source (URLs are auto-detected as web or YouTube)
-notebooklm source add "<url>"    # repeat for each URL
+# Add each source SEQUENTIALLY (one at a time, never in parallel — parallel calls cause cascading failures)
+notebooklm source add "<url1>"
+notebooklm source add "<url2>"
+notebooklm source add "<url3>"
+# ... repeat for each URL, one per command
 
-# Wait for each source to be indexed (one at a time, by source ID)
+# Then wait for each source to be indexed (one at a time, by source ID)
 notebooklm source wait <source-id> --timeout 120    # repeat for each source ID
 
 # Verify
