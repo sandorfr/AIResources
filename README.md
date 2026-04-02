@@ -13,3 +13,4 @@ Curated research on AI tools, frameworks, and techniques. Each topic is research
 | **CLI Anything** | Generates native CLI interfaces for any open source software using AI agents. | [Read](research/2026-03-29-cli-anything.md) |
 | **Garry Tan Gstack** | YC president's curated skill library for leadership, startup incubation, and founder coaching. | [Read](research/2026-03-29-garry-tan-gstack.md) |
 | **Claude Peers** | MCP server that lets Claude agents communicate and collaborate with each other. | [Read](research/2026-03-29-claude-peers.md) |
+| **LightRag** | Graph-based RAG framework that builds a knowledge graph for fast, multi-hop retrieval over large document corpora. | [Read](research/2026-04-03-lightrag.md) |
